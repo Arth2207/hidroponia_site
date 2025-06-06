@@ -1,10 +1,15 @@
 import { listarProdutosPaginado,buscarProdutoPorId,cadastrarProduto,editarProduto,excluirProduto} from "../models/produtoModels";
 import { registrarAuditoriaProduto } from "../models/auditoriaModels";
 import pool from '../conections/database.js' 
+import { redisClient } from '../middlewares/cacheRedis.js'
 
-let produtosCache = null
-let cacheTimestamp = 0
-const CACHE_TTL = 60 * 1000
+async function limparCacheProdutos() {
+    const keys = await redisClient.keys('produtos*')
+    if (keys.length > 0) {
+        await redisClient.del(keys)
+    }
+}
+
 
 export async function getProdutos(req, res) {
     try {
@@ -13,16 +18,12 @@ export async function getProdutos(req, res) {
         const orderBy = req.query.orderBy || 'id'
         const orderDir = req.query.orderDir === 'desc' ? 'DESC' : 'ASC'
         const nomeBusca = req.query.nome || ''
+        const cacheKey = `produtos:${limit}:${offset}:${orderBy}:${orderDir}:${nomeBusca}`
 
-        // Só usa cache se for a primeira página, sem busca e ordenação padrão
-        const now = Date.now()
-        if (
-            produtosCache &&
-            (now - cacheTimestamp < CACHE_TTL) &&
-            limit === 10 && offset === 0 &&
-            !nomeBusca && orderBy === 'id' && orderDir === 'ASC'
-        ) {
-            return res.status(200).json(produtosCache)
+        // Busca no Redis
+        const cached = await redisClient.get(cacheKey)
+        if (cached) {
+            return res.status(200).json(JSON.parse(cached))
         }
 
         // Busca e ordenação dinâmica
@@ -33,11 +34,8 @@ export async function getProdutos(req, res) {
         ).then(r => r.rows[0])
         const response = { produtos, total: parseInt(count) }
 
-        // Só armazena cache para a primeira página, sem busca e ordenação padrão
-        if (limit === 10 && offset === 0 && !nomeBusca && orderBy === 'id' && orderDir === 'ASC') {
-            produtosCache = response
-            cacheTimestamp = now
-        }
+        // Salva no Redis por 60 segundos
+        await redisClient.setEx(cacheKey, 60, JSON.stringify(response))
 
         res.status(200).json(response)
     } catch (error) {
@@ -58,15 +56,12 @@ export async function buscarProdutoController(req, res) {
     }
 }
 
-// Limpe o cache sempre que cadastrar, editar ou excluir produto:
 export async function cadastrarProdutoController(req, res) {
     try {
         const { nome, unidade, preco } = req.body
         const produto = await cadastrarProduto({ nome, unidade, preco })
         await registrarAuditoriaProduto(req.usuario.id, 'Produto cadastrado', produto.id)
-        // Limpa cache
-        produtosCache = null
-        cacheTimestamp = 0
+        await limparCacheProdutos()
         res.status(201).json({
             message: 'Produto cadastrado com sucesso.',
             produto
@@ -84,9 +79,7 @@ export async function editarProdutoController(req, res) {
         const produto = await editarProduto(id, { nome, unidade, preco })
         if (!produto) return res.status(404).json({ error: 'Produto não encontrado.' })
         await registrarAuditoriaProduto(req.usuario.id, 'Produto editado', produto.id)
-        // Limpa cache
-        produtosCache = null
-        cacheTimestamp = 0
+        await limparCacheProdutos()
         res.status(200).json({
             message: 'Produto editado com sucesso.',
             produto
@@ -103,9 +96,7 @@ export async function excluirProdutoController(req, res) {
         const produto = await excluirProduto(id)
         if (!produto) return res.status(404).json({ error: 'Produto não encontrado.' })
         await registrarAuditoriaProduto(req.usuario.id, 'Produto excluído', produto.id)
-        // Limpa cache
-        produtosCache = null
-        cacheTimestamp = 0
+        await limparCacheProdutos()
         res.status(200).json({ message: 'Produto excluído com sucesso.' })
     } catch (error) {
         if (process.env.NODE_ENV !== 'production') console.error(error)
@@ -119,6 +110,7 @@ export async function restaurarProdutoController(req, res) {
         const produto = await restaurarProduto(id)
         if (!produto) return res.status(404).json({ error: 'Produto não encontrado.' })
         await registrarAuditoriaProduto(req.usuario.id, 'Produto restaurado', produto.id)
+        await limparCacheProdutos()
         res.status(200).json({ message: 'Produto restaurado com sucesso.', produto })
     } catch (error) {
         if (process.env.NODE_ENV !== 'production') console.error(error)
