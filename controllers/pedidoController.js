@@ -10,6 +10,7 @@ export async function postPedido(req, res) {
         const pedidoId = await criarPedido({ usuarioId, itens })
         res.status(201).json({ pedidoId })
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao criar pedido.' })
     }
 }
@@ -20,6 +21,7 @@ export async function getPedidos(req, res) {
         const pedidos = await listarPedidos(page, limit)
         res.status(200).json(pedidos)
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao listar pedidos.' })
     }
 }
@@ -30,6 +32,7 @@ export async function getPedidosPorRestaurante(req, res) {
         const pedidos = await listarPedidosPorRestaurante(restauranteId)
         res.status(200).json(pedidos)
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao listar pedidos do restaurante.' })
     }
 }
@@ -41,6 +44,7 @@ export async function putItemPedido(req, res) {
         await editarItemPedido(itemId, novaQuantidade)
         res.status(200).json({ message: 'Item atualizado com sucesso.' })
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao atualizar item do pedido.' })
     }
 }
@@ -62,6 +66,7 @@ export async function deletePedido(req, res) {
         await cancelarPedido(pedidoId)
         res.status(200).json({ message: 'Pedido cancelado com sucesso.' })
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao cancelar pedido.' })
     }
 }
@@ -73,6 +78,7 @@ export async function getPedidoDetalhado(req, res) {
         if (!detalhes.length) return res.status(404).json({ error: 'Pedido não encontrado.' })
         res.status(200).json(detalhes)
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao buscar detalhes do pedido.' })
     }
 }
@@ -84,6 +90,7 @@ export async function getHistoricoPedidos(req, res) {
         const pedidos = await listarPedidosPorFiltro(restauranteId, dataInicio, dataFim, status)
         res.status(200).json(pedidos)
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao buscar histórico de pedidos.' })
     }
 }
@@ -99,6 +106,7 @@ export async function uploadComprovante(req, res) {
         await salvarComprovante(pedidoId, caminhoComprovante)
         res.status(200).json({ message: 'Comprovante enviado com sucesso.', comprovante: caminhoComprovante })
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao salvar comprovante.' })
     }
 }

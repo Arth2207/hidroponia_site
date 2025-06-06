@@ -18,3 +18,12 @@ export function autenticarJWT(req, res, next) {
         next()
     })
 }
+
+export function permitirPerfis(...perfisPermitidos) {
+    return (req, res, next) => {
+        if (!req.usuario || !perfisPermitidos.includes(req.usuario.tipo)) {
+            return res.status(403).json({ error: 'Acesso negado.' })
+        }
+        next()
+    }
+}

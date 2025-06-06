@@ -77,12 +77,7 @@ export async function atualizarSenha(usuarioId, senha_hash) {
     await pool.query('UPDATE usuarios SET senha_hash = $1, reset_token = NULL WHERE id = $2', [senha_hash, usuarioId])
 }
 
-export async function registrarAuditoria(usuarioId, acao) {
-    await pool.query(
-        'INSERT INTO auditoria (usuario_id, acao) VALUES ($1, $2)',
-        [usuarioId, acao]
-    )
-}
+
 
 export async function atualizarPerfil(usuarioId, { nome, email }) {
     await pool.query(
@@ -99,13 +94,7 @@ export async function buscarUsuarioPorId(usuarioId) {
     return result.rows[0]
 }
 
-export async function listarAuditoriaPorUsuario(usuarioId) {
-    const result = await pool.query(
-        'SELECT acao, data FROM auditoria WHERE usuario_id = $1 ORDER BY data DESC',
-        [usuarioId]
-    )
-    return result.rows
-}
+
 
 export async function excluirUsuario(usuarioId) {
     await pool.query('DELETE FROM usuarios WHERE id = $1', [usuarioId])

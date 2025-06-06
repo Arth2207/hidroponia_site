@@ -13,6 +13,7 @@ app.use(express.json())
 // Use as rotas separadas
 app.use(usuarioRoutes)
 app.use(produtoRoutes)
+app.use(produtoManutencaoRoutes)
 app.use(pedidoRoutes)
 
 

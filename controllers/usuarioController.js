@@ -2,9 +2,10 @@ import bcrypt from 'bcrypt'
 import { buscarRestaurantePorNome, criarRestaurante, criarUsuario,
     salvarRefreshToken, buscarRefreshToken, removerRefreshToken,
     salvarTokenReset, buscarUsuarioPorResetToken, atualizarSenha,
-    buscarUsuarioPorId, atualizarPerfil, registrarAuditoria,listarAuditoriaPorUsuario
+    buscarUsuarioPorId, atualizarPerfil,
  } from '../models/usuarioModel.js'
 import pool from '../conections/database.js'
+import { registrarAuditoria, listarAuditoriaPorUsuario } from '../models/auditoriaModels.js'
 import { buscarUsuarioPorEmail } from '../models/usuarioModel.js'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
@@ -42,6 +43,7 @@ export async function cadastro(req, res) {
             }
         })
     } catch (error) {
+        console.error(error)
         if (error.code === '23505') {
             return res.status(409).json({ error: 'Email já cadastrado.' })
         } else {
@@ -95,6 +97,7 @@ export async function login(req, res) {
             refreshToken
         })
     } catch (error) {
+        console.error(error)
         res.status(500).json({ error: 'Erro ao realizar login.' })
     }
 }
