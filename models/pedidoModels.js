@@ -87,33 +87,113 @@ export async function buscarPedidoDetalhado(pedidoId) {
     return result.rows
 }
 
-export async function listarPedidosPorFiltro(restauranteId, dataInicio, dataFim, status) {
-    let query = `SELECT p.id as pedido_id, p.criado_em, p.status, SUM(ip.quantidade * pr.preco) as total
-                 FROM pedidos p
-                 JOIN itens_pedido ip ON ip.pedido_id = p.id
-                 JOIN produtos pr ON pr.id = ip.produto_id
-                 WHERE p.restaurante_id = $1`
-    const params = [restauranteId]
-    if (dataInicio) {
-        query += ' AND p.criado_em >= $2'
-        params.push(dataInicio)
-    }
-    if (dataFim) {
-        query += ' AND p.criado_em <= $3'
-        params.push(dataFim)
+export async function listarResumoPedidos(dataInicio, dataFim, page = 1, limit = 20, status, restauranteId) {
+    const offset = (page - 1) * limit
+    let query = `
+        SELECT 
+            p.id AS produto_id,
+            p.nome AS produto_nome,
+            p.unidade,
+            SUM(ip.quantidade) AS total_quantidade,
+            SUM(ip.quantidade * p.preco) AS total_valor
+        FROM itens_pedido ip
+        JOIN produtos p ON ip.produto_id = p.id
+        JOIN pedidos ped ON ip.pedido_id = ped.id
+        WHERE 1=1
+    `
+    const params = []
+    if (dataInicio && dataFim) {
+        params.push(dataInicio, dataFim)
+        query += ` AND ped.criado_em BETWEEN $${params.length} AND $${params.length + 1}`
     }
     if (status) {
-        query += ' AND p.status = $4'
         params.push(status)
+        query += ` AND ped.status = $${params.length}`
     }
-    query += ' GROUP BY p.id, p.criado_em, p.status ORDER BY p.criado_em DESC'
+    if (restauranteId) {
+        params.push(restauranteId)
+        query += ` AND ped.restaurante_id = $${params.length}`
+    }
+    query += `
+        GROUP BY p.id, p.nome, p.unidade
+        ORDER BY p.nome
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `
+    params.push(limit, offset)
     const result = await pool.query(query, params)
     return result.rows
 }
 
-export async function salvarComprovante(pedidoId, caminhoComprovante) {
+export async function editarObservacaoItemPedido(itemId, observacao) {
     await pool.query(
-        'UPDATE pedidos SET comprovante = $1 WHERE id = $2',
-        [caminhoComprovante, pedidoId]
+        'UPDATE itens_pedido SET observacoes = $1 WHERE id = $2',
+        [observacao, itemId]
     )
+}
+
+export async function buscarObservacaoItemPedido(itemId) {
+    const result = await pool.query(
+        'SELECT observacoes FROM itens_pedido WHERE id = $1',
+        [itemId]
+    )
+    return result.rows[0]?.observacoes || ''
+}
+
+export async function listarRestaurantesSemPedido(dataEntrega) {
+    const result = await pool.query(
+        `SELECT r.id, r.nome
+         FROM restaurantes r
+         WHERE NOT EXISTS (
+             SELECT 1 FROM pedidos p
+             WHERE p.restaurante_id = r.id
+               AND p.data_entrega = $1
+               AND p.status != 'cancelado'
+         )
+         ORDER BY r.nome`,
+        [dataEntrega]
+    )
+    return result.rows
+}
+
+import pool from '../conections/database.js'
+
+export async function matrizPedidosPorDia(dataEntrega) {
+    // Busca todos os produtos (hortaliças)
+    const produtosResult = await pool.query('SELECT nome FROM produtos ORDER BY nome')
+    const produtos = produtosResult.rows.map(r => r.nome)
+
+    // Busca todos os restaurantes que fizeram pedido no dia
+    const restaurantesResult = await pool.query(
+        `SELECT DISTINCT r.nome
+         FROM pedidos p
+         JOIN restaurantes r ON p.restaurante_id = r.id
+         WHERE p.data_entrega = $1 AND p.status != 'cancelado'
+         ORDER BY r.nome`,
+        [dataEntrega]
+    )
+    const restaurantes = restaurantesResult.rows.map(r => r.nome)
+
+    // Busca as quantidades pedidas por produto/restaurante
+    const pedidosResult = await pool.query(
+        `SELECT r.nome AS restaurante, p.nome AS produto, SUM(ip.quantidade) AS quantidade
+         FROM pedidos ped
+         JOIN restaurantes r ON ped.restaurante_id = r.id
+         JOIN itens_pedido ip ON ip.pedido_id = ped.id
+         JOIN produtos p ON ip.produto_id = p.id
+         WHERE ped.data_entrega = $1 AND ped.status != 'cancelado'
+         GROUP BY r.nome, p.nome`,
+        [dataEntrega]
+    )
+    const pedidos = pedidosResult.rows
+
+    return { produtos, restaurantes, pedidos }
+}
+
+export async function salvarObservacaoPedido(pedidoId, observacao) {
+    await pool.query('UPDATE pedidos SET observacao = $1 WHERE id = $2', [observacao, pedidoId])
+}
+
+export async function buscarObservacaoPedido(pedidoId) {
+    const result = await pool.query('SELECT observacao FROM pedidos WHERE id = $1', [pedidoId])
+    return result.rows[0]?.observacao || ''
 }

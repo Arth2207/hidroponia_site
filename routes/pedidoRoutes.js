@@ -1,15 +1,16 @@
 import express from 'express';
 import { getPedido, postPedido, getPedidosPorRestaurante, 
-    putItemPedido, deletePedido, getPedidoDetalhado, getHistoricoPedidos } from '../controllers/pedidoController.js';
+    putItemPedido, deletePedido, getPedidoDetalhado, getHistoricoPedidos, 
+    uploadComprovante, putObservacaoItemPedido, getObservacaoItemPedido, putObservacaoPedido, getObservacaoPedido} from '../controllers/pedidoController.js';
 import { autenticarJWT } from '../middlewares/auth.js'
 import multer from 'multer'
 import path from 'path'
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+    destination: (_, __, cb) => {
         cb(null, 'uploads/')
     },
-    filename: (req, file, cb) => {
+    filename: (_, file, cb) => {
         const ext = path.extname(file.originalname)
         cb(null, `comprovante_${Date.now()}${ext}`)
     }
@@ -28,5 +29,10 @@ router.delete('/pedido/:pedidoId', autenticarJWT, deletePedido)
 router.get('/pedido/:pedidoId', autenticarJWT, getPedidoDetalhado)
 router.get('/pedidos/historico/:restauranteId', autenticarJWT, getHistoricoPedidos)
 router.post('/pedido/:pedidoId/comprovante', autenticarJWT, upload.single('comprovante'), uploadComprovante)
+router.put('/pedido/item/:itemId/observacao', autenticarJWT, putObservacaoItemPedido)
+router.get('/pedido/item/:itemId/observacao', autenticarJWT, getObservacaoItemPedido)
+router.put('/pedido/:pedidoId/observacao', autenticarJWT, putObservacaoPedido)
+router.get('/pedido/:pedidoId/observacao', autenticarJWT, getObservacaoPedido)
+
 
 export default router;

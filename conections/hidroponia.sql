@@ -60,3 +60,10 @@ CREATE TABLE auditoria (
     acao TEXT,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE avisos (
+    id SERIAL PRIMARY KEY,
+    mensagem TEXT NOT NULL,
+    data_criacao TIMESTAMP DEFAULT NOW(),
+    ativo BOOLEAN DEFAULT TRUE
+);
