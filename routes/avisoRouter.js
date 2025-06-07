@@ -4,13 +4,13 @@ import { autenticarJWT, permitirPerfis } from '../middlewares/auth.js'
 
 const router = express.Router()
 
-// Criar aviso (admin/funcionario)
+// Cria um novo aviso (admin/funcionário)
 router.post('/avisos', autenticarJWT, permitirPerfis('admin', 'funcionario'), postAviso)
 
-// Listar avisos (todos autenticados)
+// Lista todos os avisos ativos (todos autenticados)
 router.get('/avisos', autenticarJWT, getAvisos)
 
-// Remover aviso (admin/funcionario)
+// Remove (desativa) um aviso (admin/funcionário)
 router.delete('/avisos/:id', autenticarJWT, permitirPerfis('admin', 'funcionario'), deleteAviso)
 
 export default router

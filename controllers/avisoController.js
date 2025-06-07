@@ -1,5 +1,11 @@
+// Controlador responsável por gerenciar avisos gerais do sistema
+
 import { criarAviso, listarAvisos, desativarAviso } from '../models/avisoModel.js'
 
+/**
+ * Cria um novo aviso geral.
+ * Apenas admin ou funcionário pode acessar.
+ */
 export async function postAviso(req, res) {
     const { mensagem } = req.body
     if (!mensagem) return res.status(400).json({ error: 'Mensagem obrigatória.' })
@@ -12,6 +18,10 @@ export async function postAviso(req, res) {
     }
 }
 
+/**
+ * Lista todos os avisos ativos do sistema.
+ * Qualquer usuário autenticado pode acessar.
+ */
 export async function getAvisos(req, res) {
     try {
         const avisos = await listarAvisos()
@@ -22,6 +32,10 @@ export async function getAvisos(req, res) {
     }
 }
 
+/**
+ * Remove (desativa) um aviso geral.
+ * Apenas admin ou funcionário pode acessar.
+ */
 export async function deleteAviso(req, res) {
     const { id } = req.params
     try {
