@@ -1,7 +1,8 @@
 import { criarPedido, listarPedidos, listarPedidosPorRestaurante, 
  editarItemPedido, cancelarPedido, buscarPedidoDetalhado, listarPedidosPorFiltro,
 editarObservacaoItemPedido, buscarObservacaoItemPedido,
- listarRestaurantesSemPedido, matrizPedidosPorDia, salvarObservacaoPedido, buscarObservacaoPedido } from '../models/pedidoModel.js'
+ listarRestaurantesSemPedido, matrizPedidosPorDia, salvarObservacaoPedido, 
+ buscarObservacaoPedido, usuarioPodeEditarObservacaoItem  } from '../models/pedidoModel.js'
 
 import ExcelJS from 'exceljs'
 import path from 'path'
@@ -10,13 +11,15 @@ import path from 'path'
 const TOTAL_SHEET_HEADER = ['COD.', 'TOTAL', 'HORTA', 'DIFERENÇA']
 
 
+
 export async function postPedido(req, res) {
-    const { usuarioId, itens } = req.body
+    const { usuarioId, itens, separadorId } = req.body // <-- Adicione separadorId aqui
     if (!usuarioId || !Array.isArray(itens) || itens.length === 0) {
         return res.status(400).json({ error: 'Dados do pedido inválidos.' })
     }
     try {
-        const pedidoId = await criarPedido({ usuarioId, itens })
+        // Passe separadorId para o model se for atribuído no momento da criação
+        const pedidoId = await criarPedido({ usuarioId, itens, separadorId })
         res.status(201).json({ pedidoId })
     } catch (error) {
         console.error(error)
@@ -58,8 +61,8 @@ export async function putItemPedido(req, res) {
 
         // Permite se for admin/funcionario OU dono do pedido
         if (
-            usuario.perfil !== 'admin' &&
-            usuario.perfil !== 'funcionario' &&
+            usuario.tipo !== 'admin' &&
+            usuario.tipo !== 'funcionario' &&
             pedido.usuario_id !== usuario.id
         ) {
             return res.status(403).json({ error: 'Acesso negado.' })
@@ -165,13 +168,8 @@ export async function putObservacaoItemPedido(req, res) {
     const { observacao } = req.body
     const usuarioId = req.usuario.id
 
-    const result = await pool.query(
-        `SELECT p.usuario_id
-         FROM itens_pedido ip
-         JOIN pedidos p ON ip.pedido_id = p.id
-         WHERE ip.id = $1`, [itemId]
-    )
-    if (!result.rows.length || result.rows[0].usuario_id !== usuarioId) {
+    const podeEditar = await usuarioPodeEditarObservacaoItem(itemId, usuarioId)
+    if (!podeEditar) {
         return res.status(403).json({ error: 'Acesso negado.' })
     }
 
@@ -277,7 +275,7 @@ export async function exportarPedidosParaPlanilha(req, res) {
     }
 
 
-    abaTotal.addRow(['COD.', 'TOTAL', 'HORTA', 'DIFERENÇA'])
+    abaTotal.addRow(TOTAL_SHEET_HEADER)
 
 
     const totais = {}
@@ -340,3 +338,4 @@ export async function getObservacaoPedido(req, res) {
         res.status(500).json({ error: 'Erro ao buscar observação.' })
     }
 }
+

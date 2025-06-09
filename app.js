@@ -4,6 +4,9 @@ import dotenv from 'dotenv'
 import usuarioRoutes from './routes/usuarioRoutes.js'
 import produtoRoutes from './routes/produtoRoutes.js'
 import pedidoRoutes from './routes/pedidoRoutes.js'
+import produtoManutencaoRoutes from './routes/produtoManutencaoRoutes.js'
+import adminRoutes from './routes/adminRoutes.js'
+
 dotenv.config()
 
 const app = express()
@@ -15,6 +18,7 @@ app.use(usuarioRoutes)
 app.use(produtoRoutes)
 app.use(produtoManutencaoRoutes)
 app.use(pedidoRoutes)
+app.use(adminRoutes)
 
 
 

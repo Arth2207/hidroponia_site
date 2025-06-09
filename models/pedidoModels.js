@@ -1,10 +1,20 @@
 import pool from '../conections/database.js'
 
-export async function criarPedido({ usarioId, itens }) {
-	const pedidoResult = await pool.query (
-        'INSERT INTO pedidos (usuario_id, criado_em) VALUES ($1, NOW(   )) RETURNING id',
-        [usarioId]
-    )
+export async function criarPedido({ usuarioId, itens }) {
+	let pedidoResult;
+    if (separadorId) {
+        // Se separadorId foi informado, inclui na query
+        pedidoResult = await pool.query(
+            'INSERT INTO pedidos (usuario_id, criado_em, separador_id) VALUES ($1, NOW(), $2) RETURNING id',
+            [usuarioId, separadorId]
+        )
+    } else {
+        // Se não, cria sem o separador
+        pedidoResult = await pool.query(
+            'INSERT INTO pedidos (usuario_id, criado_em) VALUES ($1, NOW()) RETURNING id',
+            [usuarioId]
+        )
+    }
     const pedidoId = pedidoResult.rows[0].id
 
     for (const item of itens) {
@@ -197,3 +207,29 @@ export async function buscarObservacaoPedido(pedidoId) {
     const result = await pool.query('SELECT observacao FROM pedidos WHERE id = $1', [pedidoId])
     return result.rows[0]?.observacao || ''
 }
+
+export async function listarPedidosParaSeparadorDB(separadorId) {
+    const result = await pool.query(
+        `SELECT * FROM pedidos WHERE separador_id = $1 AND status = 'pendente'`,
+        [separadorId]
+    )
+    return result.rows
+}
+
+export async function marcarPedidoSeparadoDB(pedidoId) {
+    await pool.query(
+        `UPDATE pedidos SET status = 'separado' WHERE id = $1`,
+        [pedidoId]
+    )
+}
+
+export async function usuarioPodeEditarObservacaoItem(itemId, usuarioId) {
+    const result = await pool.query(
+        `SELECT p.usuario_id
+         FROM itens_pedido ip
+         JOIN pedidos p ON ip.pedido_id = p.id
+         WHERE ip.id = $1`, [itemId]
+    )
+    return result.rows.length > 0 && result.rows[0].usuario_id === usuarioId
+}
+

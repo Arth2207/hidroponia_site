@@ -62,5 +62,7 @@ router.put('/pedido/item/:itemId', autenticarJWT, permitirPerfis('admin', 'funci
 // Busca observação/feedback do pedido
 router.get('/pedido/:pedidoId/observacao', autenticarJWT, permitirPerfis('admin', 'funcionario'), getObservacaoPedido)
 
+router.get('/pedido/:pedidoId/observacao', autenticarJWT, permitirPerfis('admin', 'funcionario'), putObservacaoPedido)
+
 // Exporta o router para ser usado na aplicação principal
 export default router

@@ -1,5 +1,7 @@
-import { listarProdutosPaginado,buscarProdutoPorId,cadastrarProduto,editarProduto,excluirProduto} from "../models/produtoModels";
-import { registrarAuditoriaProduto } from "../models/auditoriaModels";
+import { listarProdutosPaginado,buscarProdutoPorId,cadastrarProduto,
+editarProduto,excluirProduto, listarHistoricoPrecoProduto,
+ buscarPrecoRestaurante, salvarOuAtualizarPreco, rankingMaisVendidos} from "../models/produtoModels";
+import { registrarAuditoriaProduto,  } from "../models/auditoriaModels";
 import pool from '../conections/database.js' 
 import { redisClient } from '../middlewares/cacheRedis.js'
 
@@ -115,5 +117,64 @@ export async function restaurarProdutoController(req, res) {
     } catch (error) {
         if (process.env.NODE_ENV !== 'production') console.error(error)
         res.status(500).json({ error: 'Erro ao restaurar produto.' })
+    }
+}
+
+export async function listarProdutosComPrecoPersonalizado(req, res) {
+    const restauranteId = req.params.restauranteId // ou de req.params
+    const produtos = await getProdutos() // sua função já existente
+
+    // Para cada produto, busca o preço personalizado
+    const produtosComPreco = await Promise.all(produtos.map(async (produto) => {
+        const preco = await buscarPrecoRestaurante(restauranteId, produto.id)
+        return { ...produto, preco: preco ?? produto.preco }
+    }))
+
+    res.json(produtosComPreco)
+}
+
+export async function alterarPrecoProdutoController(req, res) {
+    const { produtoId } = req.params
+    const { preco } = req.body
+    try {
+        const produto = await editarProduto(produtoId, { preco })
+        await registrarAuditoriaProduto(req.usuario.id, 'Preço global alterado', produtoId, `Novo preço: ${preco}`)
+        res.status(200).json({ message: 'Preço global alterado com sucesso.', produto })
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao alterar preço global.' })
+    }
+}
+
+// Altera preço personalizado para restaurante
+export async function alterarPrecoPersonalizadoController(req, res) {
+    const { produtoId, restauranteId } = req.params
+    const { preco } = req.body
+    try {
+        await salvarOuAtualizarPreco(restauranteId, produtoId, preco)
+        await registrarAuditoriaProduto(req.usuario.id, 'Preço personalizado alterado', produtoId, `Restaurante: ${restauranteId}, Novo preço: ${preco}`)
+        res.status(200).json({ message: 'Preço personalizado alterado com sucesso.' })
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao alterar preço personalizado.' })
+    }
+}
+
+// Histórico de alterações de preço
+export async function historicoAlteracoesPrecoController(req, res) {
+    const { produtoId } = req.params
+    try {
+        const historico = await listarHistoricoPrecoProduto(produtoId)
+        res.status(200).json(historico)
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar histórico de preço.' })
+    }
+}
+
+export async function getRankingMaisVendidos(req, res) {
+    const { periodo } = req.query // 'semanal' ou 'mensal'
+    try {
+        const ranking = await rankingMaisVendidos(periodo)
+        res.status(200).json(ranking)
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar ranking de hortaliças.' })
     }
 }

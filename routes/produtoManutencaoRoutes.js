@@ -1,6 +1,7 @@
 import express from 'express';
-import {getProdutos, buscarProdutoController, cadastrarProdutoController, editarProdutoController, excluirProdutoController, restaurarProdutoController} from '../controllers/produtoController.js';
-import { autenticarJWT, permitirPerfis } from '../middlewares/auth.js'
+import {getProdutos, buscarProdutoController, cadastrarProdutoController, 
+    editarProdutoController, excluirProdutoController, restaurarProdutoController, listarProdutosComPrecoPersonalizado} from '../controllers/produtoController.js';
+import { autenticarJWT, permitirPerfis, } from '../middlewares/auth.js'
 import { validarBody, produtoSchema } from '../middlewares/validacaoJoi.js'
 
 const router = express.Router()
@@ -22,5 +23,7 @@ router.delete('/produtos/:id', autenticarJWT, permitirPerfis('admin', 'funcionar
 
 // Restaura um produto inativado (admin/funcionário)
 router.patch('/produtos/:id/restaurar', autenticarJWT, permitirPerfis('admin', 'funcionario'), restaurarProdutoController)
+
+router.get('/produtos/restaurante/:restauranteId', autenticarJWT, listarProdutosComPrecoPersonalizado)
 
 export default router

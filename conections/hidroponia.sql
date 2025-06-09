@@ -11,7 +11,7 @@ CREATE TABLE usuarios (
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     senha_hash TEXT NOT NULL,
-    tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('admin', 'funcionario', 'cliente')),
+    tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('admin', 'funcionario', 'cliente', 'separador')),
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     restaurante_id INT,
     reset_token TEXT,
