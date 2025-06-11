@@ -217,7 +217,7 @@ export async function listarPedidosParaSeparadorDB(separadorId) {
 }
 
 export async function marcarPedidoSeparadoDB(pedidoId) {
-    await db.query('UPDATE pedidos SET status = $1 WHERE id = $2', ['separado', pedidoId])
+    await pool.query('UPDATE pedidos SET status = $1 WHERE id = $2', ['separado', pedidoId])
 }
 
 export async function usuarioPodeEditarObservacaoItem(itemId, usuarioId) {
