@@ -1,4 +1,4 @@
-import { listarPedidosParaSeparadorDB, buscarPedidoDetalhado, marcarPedidoSeparadoDB } from '../models/pedidoModels.js'
+import { listarPedidosParaSeparadorDB, buscarPedidoDetalhado, marcarPedidoSeparadoDB } from '../models/pedidoModel.js'
 
 // Lista pedidos atribuídos ao separador logado
 export async function listarPedidosParaSeparador(req, res) {

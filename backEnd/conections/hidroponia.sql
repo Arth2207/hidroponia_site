@@ -9,6 +9,7 @@ CREATE TABLE restaurantes (
 CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(20);
     email VARCHAR(100) UNIQUE NOT NULL,
     senha_hash TEXT NOT NULL,
     tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('admin', 'funcionario', 'cliente', 'separador')),

@@ -16,12 +16,12 @@ export async function criarRestaurante({ nome, cnpj, telefone }) {
     return result.rows[0]
 }
 
-export async function criarUsuario({ nome, email, senha_hash, tipo, restauranteId }) {
+export async function criarUsuario({ nome, cnpj, email, senha_hash, tipo, restauranteId}) {
     const result = await pool.query(
-        `INSERT INTO usuarios (nome, email, senha_hash, tipo, restaurante_id)
-         VALUES ($1, $2, $3, $4, $5)
+        `INSERT INTO usuarios (nome, cnpj, email, senha_hash, tipo, restaurante_id)
+         VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id, nome, email, tipo, restaurante_id`,
-        [nome, email, senha_hash, tipo, restauranteId || null]
+        [nome, cnpj, email, senha_hash, tipo, restauranteId || null]
     )
     return result.rows[0]
 }

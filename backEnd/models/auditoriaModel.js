@@ -1,4 +1,4 @@
-import pool from '.../conections/database.js'
+import pool from '../conections/database.js'
 
 
 export async function registrarAuditoriaProduto(usuarioId, acao, produtoId, detalhes = null) {

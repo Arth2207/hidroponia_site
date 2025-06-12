@@ -1,5 +1,5 @@
 import { criarPedido, listarPedidos, listarPedidosPorRestaurante, 
- editarItemPedido, cancelarPedido, buscarPedidoDetalhado, listarPedidosPorFiltro,
+ editarItemPedido, cancelarPedido, buscarPedidoDetalhado,
 editarObservacaoItemPedido, buscarObservacaoItemPedido,
  listarRestaurantesSemPedido, matrizPedidosPorDia, salvarObservacaoPedido, 
  buscarObservacaoPedido, usuarioPodeEditarObservacaoItem  } from '../models/pedidoModel.js'

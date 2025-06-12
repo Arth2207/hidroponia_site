@@ -1,4 +1,4 @@
-import { relatorioRestaurantesPeriodo, relatorioProdutosPeriodo } from '../models/financeiroModels.js'
+import { relatorioRestaurantesPeriodo, relatorioProdutosPeriodo } from '../models/financeiroModel.js'
 
 export async function relatorioFinanceiroRestaurantes(req, res) {
     const { periodo = 'mensal', dataInicio, dataFim } = req.query

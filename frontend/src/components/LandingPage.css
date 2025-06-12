@@ -1,0 +1,128 @@
+.landing-bg {
+  min-height: 100vh;
+  height: 100vh; /* garante altura total */
+  background: url('../assets/bg.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: center;      /* centraliza verticalmente */
+  justify-content: center;  /* centraliza horizontalmente */
+  position: relative;       /* importante para o header absoluto */
+}
+
+.landing-card {
+  background: rgba(255,255,255,0.85);
+  border-radius: 40px;
+  padding: 48px 36px 32px 36px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  width: 480px;
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+}
+
+.landing-leaf {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+
+.landing-title {
+  color: #23422a;
+  font-size: 2.7rem;
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  margin-bottom: 18px;
+  line-height: 1.1;
+}
+
+.landing-desc {
+  color: #23422a;
+  font-size: 1.1rem;
+  margin-bottom: 28px;
+  line-height: 1.4;
+}
+
+.landing-btn {
+  background: #23422a;
+  color: #fff;
+  font-size: 1.3rem;
+  font-family: 'Georgia', serif;
+  font-weight: bold;
+  border: none;
+  border-radius: 32px;
+  padding: 14px 0;
+  width: 220px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #143d1b44;
+  transition: background 0.2s;
+}
+
+.landing-btn:hover {
+  background: #3a6b3a;
+}
+
+.landing-menu {
+  color: #23422a;
+  font-size: 1.1rem;
+  margin-bottom: 32px;
+  cursor: pointer;
+}
+
+.landing-arrow {
+  font-size: 1rem;
+}
+
+.landing-headers {
+  width: 98%;
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* centraliza horizontalmente */
+  padding: 32px 0 0 0;      /* padding horizontal igual */
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  background: transparent;
+}
+
+.loggo-img {
+  height: 150px;
+  width: auto;
+}
+
+
+.landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  width: 50%;              /* ocupa toda a largura do card */
+  justify-content: flex-end; /* alinha à direita */
+}
+
+.landing-brand {
+  font-family: 'Georgia', serif;
+  font-size: 2rem;
+  color: #23422a;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.landing-subbrand {
+  font-family: 'Arial', sans-serif;
+  font-size: 1.1rem;
+  color: #b7d7a8;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-top: -2px;
+}
+
+.landing-lettuce {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+}

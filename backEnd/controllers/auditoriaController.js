@@ -1,4 +1,4 @@
-import { listarAuditoria } from '../models/auditoriaModels.js'
+import { listarAuditoria } from '../models/auditoriaModel.js'
 
 export async function getLogsSistema(req, res) {
     const { usuarioId, acao, dataInicio, dataFim, limit, offset } = req.query

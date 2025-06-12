@@ -1,7 +1,7 @@
 import { listarProdutosPaginado,buscarProdutoPorId,cadastrarProduto,
 editarProduto,excluirProduto, listarHistoricoPrecoProduto,
- buscarPrecoRestaurante, salvarOuAtualizarPreco, rankingMaisVendidos} from "../models/produtoModels";
-import { registrarAuditoriaProduto,  } from "../models/auditoriaModels";
+ buscarPrecoRestaurante, salvarOuAtualizarPreco, rankingMaisVendidos} from "../models/produtoModel.js";
+import { registrarAuditoriaProduto,  } from "../models/auditoriaModel.js";
 import pool from '../conections/database.js' 
 import { redisClient } from '../middlewares/cacheRedis.js'
 

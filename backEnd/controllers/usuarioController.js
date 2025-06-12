@@ -3,34 +3,48 @@ import { buscarRestaurantePorNome, criarRestaurante, criarUsuario,
     salvarRefreshToken, buscarRefreshToken, removerRefreshToken,
     salvarTokenReset, buscarUsuarioPorResetToken, atualizarSenha,
     buscarUsuarioPorId, atualizarPerfil,
+    buscarUsuarioPorNomeETipo,
  } from '../models/usuarioModel.js'
 import pool from '../conections/database.js'
-import { registrarAuditoria, listarAuditoriaPorUsuario } from '../models/auditoriaModels.js'
-import { buscarUsuarioPorEmail } from '../models/usuarioModel.js'
+import { registrarAuditoria, listarAuditoriaPorUsuario } from '../models/auditoriaModel.js'
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 
 export async function cadastro(req, res) {
-    const { nome, email, senha, tipo, restaurante_nome, cnpj, telefone } = req.body
+    const { nome, email, senha, tipo, restaurante_nome, cnpj, telefone } = req.body;
     if (!nome || !email || !senha || !tipo) {
-        return res.status(400).json({ error: 'Todos os campos são obrigatórios.' })
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios.' });
     }
 
     try {
-        let restauranteId = null
+        let restauranteId = null;
+        let cnpjUsuario = cnpj; // valor padrão do cnpj para o usuário
+
+        // Se for cliente, cria restaurante e associa o usuário a ele
         if (tipo === 'cliente') {
-            let restaurante = await buscarRestaurantePorNome(restaurante_nome)
+            let restaurante = await buscarRestaurantePorNome(restaurante_nome);
             if (restaurante) {
-                restauranteId = restaurante.id
+                restauranteId = restaurante.id;
             } else {
-                restaurante = await criarRestaurante({ nome: restaurante_nome, cnpj, telefone })
-                restauranteId = restaurante.id
+                restaurante = await criarRestaurante({ nome: restaurante_nome, cnpj, telefone });
+                restauranteId = restaurante.id;
             }
         }
-        const senha_hash = await bcrypt.hash(senha, 10)
-        const usuario = await criarUsuario({ nome, email, senha_hash, tipo, restauranteId })
-        
-        await registrarAuditoria(usuario.id, 'Login realizado')
+
+        // Hash da senha
+        const senha_hash = await bcrypt.hash(senha, 10);
+
+        // Cria o usuário com o campo cnpj
+        const usuario = await criarUsuario({
+            nome,
+            cnpj: cnpjUsuario,
+            email,
+            senha_hash,
+            tipo,
+            restauranteId
+        });
+
+        await registrarAuditoria(usuario.id, 'Cadastro realizado');
 
         res.status(201).json({
             message: 'Cadastro realizado com sucesso.',
@@ -39,15 +53,16 @@ export async function cadastro(req, res) {
                 nome: usuario.nome,
                 email: usuario.email,
                 tipo: usuario.tipo,
-                restauranteId: usuario.restaurante_id
+                restauranteId: usuario.restaurante_id,
+                cnpj: usuario.cnpj
             }
-        })
+        });
     } catch (error) {
-        console.error(error)
+        console.error(error);
         if (error.code === '23505') {
-            return res.status(409).json({ error: 'Email já cadastrado.' })
+            return res.status(409).json({ error: 'Email já cadastrado.' });
         } else {
-            res.status(500).json({ error: 'Erro ao cadastrar usuário.' })
+            res.status(500).json({ error: 'Erro ao cadastrar usuário.' });
         }
     }
 }
@@ -59,7 +74,7 @@ export async function login(req, res) {
     }
 
     try {
-        const usuario = await buscarUsuarioPorEmail(nome, tipo)
+        const usuario = await buscarUsuarioPorNomeETipo(nome, tipo)
         if (!usuario) {
             await registrarAuditoria(null, `Falha de login: usuário "${nome}" não encontrado`)
             return res.status(404).json({ error: 'Usuário não encontrado.' })

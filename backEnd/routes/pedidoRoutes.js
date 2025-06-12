@@ -1,7 +1,7 @@
 import express from 'express';
 // Importa todos os controladores relacionados a pedidos
 import { 
-    getPedido,                      // Lista todos os pedidos (geral)
+    getPedidos,                      // Lista todos os pedidos (geral)
     postPedido,                     // Cria um novo pedido
     getPedidosPorRestaurante,       // Lista pedidos de um restaurante específico
     putItemPedido,                  // Edita um item do pedido
@@ -37,7 +37,7 @@ const upload = multer({ storage })
 router.post('/pedido', autenticarJWT, postPedido);
 
 // Rota para listar todos os pedidos
-router.get('/pedidos', autenticarJWT, getPedido);
+router.get('/pedidos', autenticarJWT, getPedidos);
 
 // Rota para listar pedidos de um restaurante específico
 router.get('/pedidos/restaurante/:restauranteId', autenticarJWT, getPedidosPorRestaurante)

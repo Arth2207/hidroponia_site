@@ -165,7 +165,6 @@ export async function listarRestaurantesSemPedido(dataEntrega) {
     return result.rows
 }
 
-import pool from '../conections/database.js'
 
 export async function matrizPedidosPorDia(dataEntrega) {
     // Busca todos os produtos (hortaliças)
