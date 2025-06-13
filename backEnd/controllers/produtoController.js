@@ -1,6 +1,7 @@
 import { listarProdutosPaginado,buscarProdutoPorId,cadastrarProduto,
 editarProduto,excluirProduto, listarHistoricoPrecoProduto,
- buscarPrecoRestaurante, salvarOuAtualizarPreco, rankingMaisVendidos} from "../models/produtoModel.js";
+ buscarPrecoRestaurante, salvarOuAtualizarPreco, rankingMaisVendidos,
+ buscarProdutosPorRestauranteId} from "../models/produtoModel.js";
 import { registrarAuditoriaProduto,  } from "../models/auditoriaModel.js";
 import pool from '../conections/database.js' 
 import { redisClient } from '../middlewares/cacheRedis.js'
@@ -62,7 +63,7 @@ export async function cadastrarProdutoController(req, res) {
     try {
         const { nome, unidade, preco } = req.body
         const produto = await cadastrarProduto({ nome, unidade, preco })
-        await registrarAuditoriaProduto(req.usuario.id, 'Produto cadastrado', produto.id)
+        await registrarAuditoriaProduto(1, 'Produto cadastrado', produto.id)
         await limparCacheProdutos()
         res.status(201).json({
             message: 'Produto cadastrado com sucesso.',
@@ -80,7 +81,7 @@ export async function editarProdutoController(req, res) {
         const { nome, unidade, preco } = req.body
         const produto = await editarProduto(id, { nome, unidade, preco })
         if (!produto) return res.status(404).json({ error: 'Produto não encontrado.' })
-        await registrarAuditoriaProduto(req.usuario.id, 'Produto editado', produto.id)
+        await registrarAuditoriaProduto(1, 'Produto editado', produto.id)
         await limparCacheProdutos()
         res.status(200).json({
             message: 'Produto editado com sucesso.',
@@ -97,7 +98,7 @@ export async function excluirProdutoController(req, res) {
     try {
         const produto = await excluirProduto(id)
         if (!produto) return res.status(404).json({ error: 'Produto não encontrado.' })
-        await registrarAuditoriaProduto(req.usuario.id, 'Produto excluído', produto.id)
+        await registrarAuditoriaProduto(1, 'Produto excluído', produto.id)
         await limparCacheProdutos()
         res.status(200).json({ message: 'Produto excluído com sucesso.' })
     } catch (error) {
@@ -111,7 +112,7 @@ export async function restaurarProdutoController(req, res) {
     try {
         const produto = await restaurarProduto(id)
         if (!produto) return res.status(404).json({ error: 'Produto não encontrado.' })
-        await registrarAuditoriaProduto(req.usuario.id, 'Produto restaurado', produto.id)
+        await registrarAuditoriaProduto(1, 'Produto restaurado', produto.id)
         await limparCacheProdutos()
         res.status(200).json({ message: 'Produto restaurado com sucesso.', produto })
     } catch (error) {
@@ -122,7 +123,7 @@ export async function restaurarProdutoController(req, res) {
 
 export async function listarProdutosComPrecoPersonalizado(req, res) {
     const restauranteId = req.params.restauranteId // ou de req.params
-    const produtos = await getProdutos() // sua função já existente
+    const produtos = await buscarProdutosPorRestauranteId() // sua função já existente
 
     // Para cada produto, busca o preço personalizado
     const produtosComPreco = await Promise.all(produtos.map(async (produto) => {
@@ -138,7 +139,7 @@ export async function alterarPrecoProdutoController(req, res) {
     const { preco } = req.body
     try {
         const produto = await editarProduto(produtoId, { preco })
-        await registrarAuditoriaProduto(req.usuario.id, 'Preço global alterado', produtoId, `Novo preço: ${preco}`)
+        await registrarAuditoriaProduto(1, 'Preço global alterado', produtoId, `Novo preço: ${preco}`)
         res.status(200).json({ message: 'Preço global alterado com sucesso.', produto })
     } catch (error) {
         res.status(500).json({ error: 'Erro ao alterar preço global.' })
@@ -151,7 +152,7 @@ export async function alterarPrecoPersonalizadoController(req, res) {
     const { preco } = req.body
     try {
         await salvarOuAtualizarPreco(restauranteId, produtoId, preco)
-        await registrarAuditoriaProduto(req.usuario.id, 'Preço personalizado alterado', produtoId, `Restaurante: ${restauranteId}, Novo preço: ${preco}`)
+        await registrarAuditoriaProduto(1, 'Preço personalizado alterado', produtoId, `Restaurante: ${restauranteId}, Novo preço: ${preco}`)
         res.status(200).json({ message: 'Preço personalizado alterado com sucesso.' })
     } catch (error) {
         res.status(500).json({ error: 'Erro ao alterar preço personalizado.' })

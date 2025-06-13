@@ -1,34 +1,45 @@
 import React, { useState } from 'react';
 import './LoginForm.css';
 import logo from '../assets/Logo.png';
+import { useNavigate } from "react-router-dom";
 
-function LoginForm() {
-  const [nome, setNome] = useState('');
-  const [senha, setSenha] = useState('');
-  const [tipo, setTipo] = useState('cliente'); // ou admin/funcionario, conforme seu sistema
-  const [erro, setErro] = useState('');
 
-  const handleSubmit = async (e) => {
+
+const API_URL = "http://localhost:3001";
+
+export default function Login() {
+  const [nome, setNome] = useState("");
+  const [senha, setSenha] = useState("");
+  const [tipo, setTipo] = useState("");
+  const [erro, setErro] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setErro('');
-    try {
-      const response = await fetch('http://localhost:3001/login', { // ajuste a URL se necessário
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, senha, tipo })
-      });
-      const data = await response.json();
-      if (response.ok) {
-        // Salve o token no localStorage ou contexto
-        localStorage.setItem('token', data.token);
-        // Redirecione ou atualize o estado do app
-        window.location.href = '/dashboard'; // ajuste para sua rota
-      } else {
-        setErro(data.error || 'Erro ao fazer login');
-      }
-    } catch (err) {
-      setErro('Erro de conexão com o servidor');
-    }
+    setErro("");
+    fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, senha, tipo }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Erro ao fazer login");
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("tipo", data.usuario.tipo);
+        localStorage.setItem("nome", data.usuario.nome);
+
+        // Redirecionamento conforme o tipo
+        if (data.usuario.tipo === "admin") {
+          navigate("/DashboardAdmin");
+        } else if (data.usuario.tipo === "cliente") {
+          navigate("/dashboardCliente");
+        } else {
+          // Redirecione para outra página se desejar
+          setErro("Tipo de usuário não reconhecido.");
+        }
+      })
+      .catch((err) => setErro(err.message));
   };
 
   return (
@@ -62,5 +73,3 @@ function LoginForm() {
     </div>
   );
 }
-
-export default LoginForm;

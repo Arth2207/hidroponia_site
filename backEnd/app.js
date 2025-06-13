@@ -9,6 +9,8 @@ import adminRouter from './routes/adminRoutes.js'
 import pedidomanutencaoRouter from './routes/pedidoManutençãoRouter.js'
 import avisoRouter from './routes/avisoRouter.js'
 import separadorRoutes from './routes/separadorRoutes.js'
+import dashboardRoutes from './routes/dashBoardRoutes.js'
+
 dotenv.config()
 
 const app = express()
@@ -24,6 +26,7 @@ app.use(adminRouter)
 app.use(pedidomanutencaoRouter)
 app.use(avisoRouter)
 app.use(separadorRoutes)
+app.use(dashboardRoutes)
 
 
 

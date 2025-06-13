@@ -229,3 +229,19 @@ export async function usuarioPodeEditarObservacaoItem(itemId, usuarioId) {
     return result.rows.length > 0 && result.rows[0].usuario_id === usuarioId
 }
 
+export async function listarPedidosRecentesTodosRestaurantes(limit = 10) {
+    const result = await pool.query(
+        `SELECT p.id AS pedido_id, p.criado_em, r.nome AS restaurante, p.status, 
+                SUM(ip.quantidade * pr.preco) AS total
+         FROM pedidos p
+         JOIN restaurantes r ON p.restaurante_id = r.id
+         JOIN itens_pedido ip ON ip.pedido_id = p.id
+         JOIN produtos pr ON pr.id = ip.produto_id
+         GROUP BY p.id, r.nome, p.criado_em, p.status
+         ORDER BY p.criado_em DESC
+         LIMIT $1`,
+        [limit]
+    );
+    return result.rows;
+}
+

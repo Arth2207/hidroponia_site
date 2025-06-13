@@ -68,3 +68,12 @@ CREATE TABLE avisos (
     data_criacao TIMESTAMP DEFAULT NOW(),
     ativo BOOLEAN DEFAULT TRUE
 );
+
+CREATE TABLE auditoria_produtos (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER,
+    acao VARCHAR(255) NOT NULL,
+    produto_id INTEGER,
+    data_hora TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    detalhes TEXT;
+);

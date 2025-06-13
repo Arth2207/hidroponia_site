@@ -1,6 +1,6 @@
 import express from 'express'
 import { cadastro, login, refreshToken, logout, esqueciSenha, resetSenha,
-    getMe, atualizarPerfilController, trocarSenha, getAuditoria, excluirConta
+    getMe, atualizarPerfilController, trocarSenha, getAuditoria, excluirConta, listarRestaurantes,excluirRestauranteController
  } from '../controllers/usuarioController.js'
 import { autenticarJWT } from '../middlewares/auth.js'
 
@@ -28,5 +28,9 @@ router.post('/trocar-senha', autenticarJWT, trocarSenha)
 router.get('/auditoria', autenticarJWT, getAuditoria)
 // Exclui a conta do usuário autenticado
 router.delete('/excluir-conta', autenticarJWT, excluirConta)
+
+router.get('/restaurantes', listarRestaurantes);
+
+router.delete('/restaurantes/:id', excluirRestauranteController);
 
 export default router

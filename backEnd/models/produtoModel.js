@@ -101,3 +101,10 @@ export async function rankingMaisVendidos(periodo = 'mensal') {
     )
     return result.rows
 }
+
+export async function buscarProdutosPorRestauranteId() {
+  const result = await pool.query(
+    `SELECT * FROM produtos WHERE ativo = true`
+  );
+  return result.rows;
+}

@@ -3,7 +3,7 @@ import { buscarRestaurantePorNome, criarRestaurante, criarUsuario,
     salvarRefreshToken, buscarRefreshToken, removerRefreshToken,
     salvarTokenReset, buscarUsuarioPorResetToken, atualizarSenha,
     buscarUsuarioPorId, atualizarPerfil,
-    buscarUsuarioPorNomeETipo,
+    buscarUsuarioPorNomeETipo, buscarRestaurantesPorNomeParcial,excluirRestaurante
  } from '../models/usuarioModel.js'
 import pool from '../conections/database.js'
 import { registrarAuditoria, listarAuditoriaPorUsuario } from '../models/auditoriaModel.js'
@@ -224,3 +224,24 @@ export async function excluirConta(req, res) {
     res.status(200).json({ message: 'Conta excluída com sucesso.' })
 }
 
+export async function listarRestaurantes(req, res) {
+    const { nome = "" } = req.query;
+    try {
+        const restaurantes = await buscarRestaurantesPorNomeParcial(nome);
+        res.status(200).json(restaurantes);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao buscar restaurantes." });
+    }
+}
+
+export async function excluirRestauranteController(req, res) {
+    const { id } = req.params;
+    try {
+        await excluirRestaurante(id);
+        res.status(200).json({ message: 'Restaurante excluído com sucesso.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao excluir restaurante.' });
+    }
+}

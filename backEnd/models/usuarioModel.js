@@ -99,3 +99,15 @@ export async function buscarUsuarioPorId(usuarioId) {
 export async function excluirUsuario(usuarioId) {
     await pool.query('DELETE FROM usuarios WHERE id = $1', [usuarioId])
 }
+
+export async function buscarRestaurantesPorNomeParcial(nome) {
+    const result = await pool.query(
+        'SELECT id, nome FROM restaurantes WHERE nome ILIKE $1 ORDER BY nome',
+        [`%${nome}%`]
+    );
+    return result.rows;
+}
+
+export async function excluirRestaurante(restauranteId) {
+    await pool.query('DELETE FROM restaurantes WHERE id = $1', [restauranteId]);
+}
