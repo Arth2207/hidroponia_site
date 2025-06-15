@@ -1,5 +1,5 @@
 import express from 'express'
-import { relatorioFinanceiroRestaurantes, relatorioFinanceiroProdutos,} from '../controllers/financeiroController.js'
+import { relatorioFinanceiroRestaurantes, relatorioFinanceiroProdutos, relatorioFinanceiro} from '../controllers/financeiroController.js'
 import { autenticarJWT, permitirPerfis } from '../middlewares/auth.js'
 import { getLogsSistema } from '../controllers/auditoriaController.js'
 import { 

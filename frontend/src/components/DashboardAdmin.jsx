@@ -36,12 +36,14 @@ function DashboardAdmin() {
   return (
     <div className="admin-bg">
       <div className="admin-dashboard">
-        <aside className="admin-sidebar">
+        <aside className="admin-sidebare">
           <h2 className="admin-title">Admin Dashboard</h2>
           <nav>
             <ul>
               <li className="active"><span>👤</span> Painel Principal</li>
-              <li><span>👥</span> Gestão de Usuarios</li>
+              <li  style={{ cursor: "pointer" }}
+                onClick={() => navigate("/usuariosAdmin")}
+              ><span>👥</span> Gestão de Usuarios</li>
               <li  style={{ cursor: "pointer" }}
                 onClick={() => navigate("/restaurantesAdmin")}
               >
@@ -55,7 +57,9 @@ function DashboardAdmin() {
                 <span className="icon">▤</span> Gestão de Produtos
               </li>
               <li><span>📢</span> Avisos do Sistema</li>
-              <li><span>📊</span> Relatórios e Auditoria</li>
+              <li  style={{ cursor: "pointer" }}
+                onClick={() => navigate("/relatorioAdmin")}
+              ><span>📊</span> Relatórios e Auditoria</li>
             </ul>
           </nav>
         </aside>

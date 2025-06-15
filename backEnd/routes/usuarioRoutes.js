@@ -1,6 +1,6 @@
 import express from 'express'
 import { cadastro, login, refreshToken, logout, esqueciSenha, resetSenha,
-    getMe, atualizarPerfilController, trocarSenha, getAuditoria, excluirConta, listarRestaurantes,excluirRestauranteController
+    getMe, atualizarPerfilController, trocarSenha, getAuditoria, excluirUsuario, excluirConta, listarRestaurantes, listarUsuarios,excluirRestauranteController
  } from '../controllers/usuarioController.js'
 import { autenticarJWT } from '../middlewares/auth.js'
 
@@ -32,5 +32,9 @@ router.delete('/excluir-conta', autenticarJWT, excluirConta)
 router.get('/restaurantes', listarRestaurantes);
 
 router.delete('/restaurantes/:id', excluirRestauranteController);
+
+router.get('/usuarios', listarUsuarios);
+
+router.delete('/usuarios/:id', excluirUsuario);
 
 export default router

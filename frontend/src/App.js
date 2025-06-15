@@ -6,6 +6,9 @@ import Dashboard from './components/DashboardCliente.jsx';
 import DashboardAdmin from './components/DashboardAdmin.jsx';
 import ProdutosAdmin from './components/produtosAdmin.jsx';
 import RestaurantesAdmin from './components/restauranteAdmin.jsx';
+import DashboardUsuarios from './components/DashboardUsuarios.jsx';
+import RelatorioFinanceiro from './components/DashboardRelatorio.jsx';  
+import OrderSeparator from './components/DashboardSeparador.jsx';
 
 function App() {
   return (
@@ -18,6 +21,9 @@ function App() {
         <Route path="/dashboardAdmin" element={<DashboardAdmin />} />
         <Route path="/produtosAdmin" element={<ProdutosAdmin />} />
         <Route path="/restaurantesAdmin" element={<RestaurantesAdmin />} />
+        <Route path="/usuariosAdmin" element={<DashboardUsuarios />} />
+        <Route path="/relatorioAdmin" element={<RelatorioFinanceiro />} />
+        <Route path="/separador" element={<OrderSeparator />} />
 
         {/* Adicione outras rotas conforme necessário */}
       </Routes>

@@ -10,6 +10,7 @@ import pedidomanutencaoRouter from './routes/pedidoManutençãoRouter.js'
 import avisoRouter from './routes/avisoRouter.js'
 import separadorRoutes from './routes/separadorRoutes.js'
 import dashboardRoutes from './routes/dashBoardRoutes.js'
+import adminFinanceiroRouter from './routes/adminFinanceiroRouter.js'
 
 dotenv.config()
 
@@ -27,6 +28,7 @@ app.use(pedidomanutencaoRouter)
 app.use(avisoRouter)
 app.use(separadorRoutes)
 app.use(dashboardRoutes)
+app.use(adminFinanceiroRouter)
 
 
 

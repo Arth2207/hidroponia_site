@@ -17,7 +17,7 @@
   overflow: hidden;
 }
 
-.admin-sidebar {
+.admin-sidebare {
   background: #106b1e;
   padding: 32px 18px 32px 24px;
   width: 240px;
@@ -34,13 +34,13 @@
   margin-bottom: 24px;
 }
 
-.admin-sidebar nav ul {
+.admin-sidebare nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.admin-sidebar nav ul li {
+.admin-sidebare nav ul li {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -53,8 +53,8 @@
   transition: background 0.18s;
 }
 
-.admin-sidebar nav ul li.active,
-.admin-sidebar nav ul li:hover {
+.admin-sidebare nav ul li.active,
+.admin-sidebare nav ul li:hover {
   background: #cbe7b6;
   font-weight: bold;
 }

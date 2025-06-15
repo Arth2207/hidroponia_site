@@ -245,3 +245,25 @@ export async function excluirRestauranteController(req, res) {
         res.status(500).json({ error: 'Erro ao excluir restaurante.' });
     }
 }
+
+export async function listarUsuarios(req, res) {
+    try {
+        const { rows } = await pool.query('SELECT id, nome, email, tipo FROM usuarios ORDER BY id');
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao listar usuários.' });
+    }
+}
+// 
+
+export async function excluirUsuario(req, res) {
+    try {
+        const { id } = req.params;
+        await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao excluir usuário.' });
+    }
+}
