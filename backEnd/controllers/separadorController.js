@@ -2,16 +2,35 @@ import { listarPedidosParaSeparadorDB, buscarPedidoDetalhado, marcarPedidoSepara
 
 // Lista pedidos atribuídos ao separador logado
 export async function listarPedidosParaSeparador(req, res) {
-    const separadorId = req.usuario.id
-    const pedidos = await listarPedidosParaSeparadorDB(separadorId)
+    const funcionarioId = req.usuario.id
+    const pedidos = await listarPedidosParaSeparadorDB()
     res.status(200).json(pedidos)
 }
 
 // Detalha um pedido específico
 export async function getPedidoDetalhadoSeparador(req, res) {
-    const { pedidoId } = req.params
-    const pedido = await buscarPedidoDetalhado(pedidoId)
-    res.status(200).json(pedido)
+    const { pedidoId } = req.params;
+    const detalhes = await buscarPedidoDetalhado(pedidoId);
+
+    if (!detalhes.length) {
+        return res.status(404).json({ error: "Pedido não encontrado." });
+    }
+
+    // Agrupa os itens
+    const pedido = {
+        pedido_id: detalhes[0].pedido_id,
+        criado_em: detalhes[0].criado_em,
+        status: detalhes[0].status,
+        cliente: detalhes[0].cliente,
+        itens: detalhes.map(item => ({
+            produto_id: item.produto_id,
+            produto: item.produto,
+            quantidade: item.quantidade,
+            preco: item.preco
+        }))
+    };
+
+    res.status(200).json(pedido);
 }
 
 // Marca pedido como separado

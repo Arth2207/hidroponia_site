@@ -49,7 +49,9 @@ function DashboardAdmin() {
               >
                 <span className="icon">▤</span> Gestão de Restaurantes
               </li>
-              <li><span>🛒</span> Gestão de Pedidos</li>
+              <li  style={{ cursor: "pointer" }}
+                onClick={() => navigate("/pedidoAdmin")}
+              ><span>🛒</span> Gestão de Pedidos</li>
               <li
                 style={{ cursor: "pointer" }}
                 onClick={() => navigate("/produtosAdmin")}

@@ -13,17 +13,18 @@ const TOTAL_SHEET_HEADER = ['COD.', 'TOTAL', 'HORTA', 'DIFERENÇA']
 
 
 export async function postPedido(req, res) {
-    const { usuarioId, itens, separadorId } = req.body // <-- Adicione separadorId aqui
-    if (!usuarioId || !Array.isArray(itens) || itens.length === 0) {
-        return res.status(400).json({ error: 'Dados do pedido inválidos.' })
+    const { itens, data_entrega } = req.body;
+    const restauranteId = req.usuario.restauranteId; // do JWT
+
+    if (!restauranteId || !Array.isArray(itens) || itens.length === 0) {
+        return res.status(400).json({ error: 'Dados do pedido inválidos.' });
     }
     try {
-        // Passe separadorId para o model se for atribuído no momento da criação
-        const pedidoId = await criarPedido({ usuarioId, itens, separadorId })
-        res.status(201).json({ pedidoId })
+        const { pedidoId, total } = await criarPedido({ restauranteId, itens, data_entrega });
+        res.status(201).json({ pedidoId, total });
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ error: 'Erro ao criar pedido.' })
+        console.error(error);
+        res.status(500).json({ error: 'Erro ao criar pedido.' });
     }
 }
 
@@ -348,6 +349,24 @@ export async function getObservacaoPedido(req, res) {
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: 'Erro ao buscar observação.' })
+    }
+}
+
+export async function getUltimoPedidoRestaurante(req, res) {
+    try {
+        const restauranteId = req.usuario.restauranteId;
+        if (!restauranteId) return res.status(400).json({ error: "Restaurante não encontrado para o usuário." });
+
+        // Busca os pedidos do restaurante, ordenados por data decrescente
+        const pedidos = await listarPedidosPorRestaurante(restauranteId);
+        if (!pedidos.length) return res.status(404).json([]);
+
+        const ultimoPedidoId = pedidos[0].pedido_id;
+        const itens = await buscarPedidoDetalhado(ultimoPedidoId);
+        res.json(itens);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Erro ao buscar último pedido." });
     }
 }
 

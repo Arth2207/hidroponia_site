@@ -14,7 +14,7 @@ import {
     getRestaurantesSemPedido,      // Lista restaurantes que não fizeram pedido no dia
     exportarPedidosParaPlanilha,   // Exporta pedidos para Excel
     putObservacaoPedido,           // Edita observação/feedback do pedido
-    getObservacaoPedido            // Busca observação/feedback do pedido
+    getObservacaoPedido,         // Busca observação/feedback do pedido
 } from '../controllers/pedidoController.js'
 
 // Importa middleware de autenticação JWT
@@ -63,6 +63,8 @@ router.put('/pedido/item/:itemId', autenticarJWT, permitirPerfis('admin', 'funci
 router.get('/pedido/:pedidoId/observacao', autenticarJWT, permitirPerfis('admin', 'funcionario'), getObservacaoPedido)
 
 router.get('/pedido/:pedidoId/observacao', autenticarJWT, permitirPerfis('admin', 'funcionario'), putObservacaoPedido)
+
+
 
 // Exporta o router para ser usado na aplicação principal
 export default router

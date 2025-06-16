@@ -1,0 +1,125 @@
+.order-bg {
+  min-height: 100vh;
+  background: url('../assets/bg.jpg') center/cover no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-card {
+  background: #f8f6edcc;
+  border-radius: 28px;
+  box-shadow: 0 8px 32px #0002;
+  padding: 40px 32px;
+  min-width: 340px;
+  max-width: 95vw;
+}
+
+.order-title {
+  font-size: 2.3rem;
+  color: #23422a;
+  margin-bottom: 28px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.order-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+}
+
+.order-item {
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px #0001;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+}
+
+.order-img {
+  font-size: 2.3rem;
+  width: 48px;
+  text-align: center;
+}
+
+.order-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.order-prod {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #23422a;
+}
+
+.order-price {
+  color: #3c5e43;
+  font-size: 1.1rem;
+}
+
+.order-qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3ffe6;
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+.order-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #23422a;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.order-btn:hover {
+  background: #eae7d3;
+}
+
+.order-qtd {
+  font-size: 1.1rem;
+  min-width: 18px;
+  text-align: center;
+}
+
+.order-confirm {
+  width: 100%;
+  margin-top: 18px;
+  background: #23422a;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.order-confirm:hover {
+  background: #3c5e43;
+}
+
+.order-msg {
+  margin-top: 18px;
+  text-align: center;
+  color: #23422a;
+  font-weight: bold;
+}
+
+.order-loading {
+  text-align: center;
+  color: #23422a;
+  margin-bottom: 18px;
+}

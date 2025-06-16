@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./DashboardSeparador.css";
 
-const API_URL = "http://localhost:3001"; // ajuste se necessário
+const API_URL = "http://localhost:3001";
 
-export default function OrderSeparator() {
-  const [restaurantes, setRestaurantes] = useState([]);
+export default function DashboardSeparador() {
+  const [pedidos, setPedidos] = useState([]);
   const [aberto, setAberto] = useState({});
+  const [detalhes, setDetalhes] = useState({});
   const [separados, setSeparados] = useState({});
   const [erro, setErro] = useState("");
 
@@ -16,20 +17,33 @@ export default function OrderSeparator() {
       },
     })
       .then(async (res) => {
-        if (!res.ok) {
-          throw new Error("Erro ao buscar pedidos. Verifique seu acesso.");
-        }
+        if (!res.ok) throw new Error("Erro ao buscar pedidos.");
         const data = await res.json();
-        setRestaurantes(Array.isArray(data) ? data : []);
+        setPedidos(Array.isArray(data) ? data : []);
       })
       .catch((err) => {
-        setRestaurantes([]);
+        setPedidos([]);
         setErro(err.message);
       });
   }, []);
 
-  const handleToggle = (id) => {
+  const handleToggle = async (id) => {
     setAberto((prev) => ({ ...prev, [id]: !prev[id] }));
+    // Se ainda não buscou os detalhes, busca agora
+    if (!detalhes[id]) {
+      try {
+        const res = await fetch(`${API_URL}/separador/pedido/${id}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!res.ok) throw new Error("Erro ao buscar detalhes do pedido.");
+        const data = await res.json();
+        setDetalhes((prev) => ({ ...prev, [id]: data.itens || [] }));
+      } catch (err) {
+        setDetalhes((prev) => ({ ...prev, [id]: [{ produto: "Erro ao carregar itens", quantidade: 0 }] }));
+      }
+    }
   };
 
   const handleSeparar = (id) => {
@@ -46,13 +60,13 @@ export default function OrderSeparator() {
   return (
     <div className="separator-bg">
       <div className="separator-card">
-        <h2 className="separator-title">Order Separator</h2>
+        <h2 className="separator-title">Pedidos de Todos os Restaurantes</h2>
         {erro && <div className="separator-error">{erro}</div>}
         <ul className="separator-list">
-          {restaurantes.length === 0 && !erro && (
+          {pedidos.length === 0 && !erro && (
             <li className="separator-empty">Nenhum pedido encontrado.</li>
           )}
-          {restaurantes.map((pedido) => (
+          {pedidos.map((pedido) => (
             <li
               key={pedido.pedido_id}
               className={`separator-item${separados[pedido.pedido_id] ? " checked" : ""}`}
@@ -66,7 +80,10 @@ export default function OrderSeparator() {
                 >
                   {separados[pedido.pedido_id] ? "✔" : "○"}
                 </button>
-                <span className="separator-nome">{pedido.restaurante}</span>
+                <span className="separator-nome">
+                  Pedido #{pedido.pedido_id} - {pedido.restaurante ? `Restaurante: ${pedido.restaurante} - ` : ""}
+                  {new Date(pedido.criado_em).toLocaleString("pt-BR")}
+                </span>
                 <button
                   className="separator-arrow"
                   onClick={() => handleToggle(pedido.pedido_id)}
@@ -78,11 +95,14 @@ export default function OrderSeparator() {
               {aberto[pedido.pedido_id] && (
                 <div className="separator-details">
                   <ul>
-                    {pedido.itens?.map((item, idx) => (
-                      <li key={idx}>
-                        {item.quantidade}x {item.produto}
-                      </li>
-                    ))}
+                    {detalhes[pedido.pedido_id]
+                      ? detalhes[pedido.pedido_id].map((item, idx) => (
+                          <li key={idx}>
+                            {item.quantidade}x {item.produto}
+                          </li>
+                        ))
+                      : <li>Carregando itens...</li>
+                    }
                   </ul>
                 </div>
               )}

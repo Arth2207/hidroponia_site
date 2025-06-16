@@ -3,8 +3,6 @@ import './LoginForm.css';
 import logo from '../assets/Logo.png';
 import { useNavigate } from "react-router-dom";
 
-
-
 const API_URL = "http://localhost:3001";
 
 export default function Login() {
@@ -28,18 +26,22 @@ export default function Login() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("tipo", data.usuario.tipo);
         localStorage.setItem("nome", data.usuario.nome);
-
+        localStorage.setItem("usuarioId", data.usuario.id);
+        
         // Redirecionamento conforme o tipo
         if (data.usuario.tipo === "admin") {
           navigate("/DashboardAdmin");
         } else if (data.usuario.tipo === "cliente") {
           navigate("/dashboardCliente");
         } else {
-          // Redirecione para outra página se desejar
-          setErro("Tipo de usuário não reconhecido.");
+          navigate("/separador");
         }
       })
       .catch((err) => setErro(err.message));
+  };
+
+  const handleCadastroClick = () => {
+    navigate("/cadastro");
   };
 
   return (
@@ -58,6 +60,9 @@ export default function Login() {
 
           <label className="login-label">Tipo</label>
           <select className="login-input" value={tipo} onChange={e => setTipo(e.target.value)}>
+             <option value="" disabled hidden>
+              Selecione o tipo...
+            </option>
             <option value="cliente">Cliente</option>
             <option value="admin">Admin</option>
             <option value="funcionario">Funcionário</option>
@@ -67,7 +72,13 @@ export default function Login() {
         </form>
         {erro && <div style={{ color: 'red', marginTop: 8 }}>{erro}</div>}
         <div className="login-footer">
-          Não tem conta?
+          Não tem conta?{" "}
+          <span
+            style={{ color: "#5aa94a", cursor: "pointer", textDecoration: "underline" }}
+            onClick={handleCadastroClick}
+          >
+            Cadastre-se
+          </span>
         </div>
       </div>
     </div>

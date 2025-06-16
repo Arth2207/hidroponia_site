@@ -5,12 +5,12 @@ import { listarPedidosParaSeparador, getPedidoDetalhadoSeparador, marcarPedidoCo
 const router = express.Router()
 
 // Lista todos os pedidos que o separador deve separar
-router.get('/separador/pedidos', autenticarJWT, permitirPerfis('separador'), listarPedidosParaSeparador)
+router.get('/separador/pedidos', autenticarJWT, permitirPerfis('funcionario'), listarPedidosParaSeparador)
 
 // Detalha um pedido específico para o separador
-router.get('/separador/pedido/:pedidoId', autenticarJWT, permitirPerfis('separador'), getPedidoDetalhadoSeparador)
+router.get('/separador/pedido/:pedidoId', autenticarJWT, permitirPerfis('funcionario'), getPedidoDetalhadoSeparador)
 
 // Marca pedido como separado
-router.post('/separador/pedido/:pedidoId/separar', autenticarJWT, permitirPerfis('separador'), marcarPedidoComoSeparado)
+router.post('/separador/pedido/:pedidoId/separar', autenticarJWT, permitirPerfis('funcionario'), marcarPedidoComoSeparado)
 
 export default router

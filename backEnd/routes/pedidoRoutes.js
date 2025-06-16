@@ -12,7 +12,8 @@ import {
     putObservacaoItemPedido,        // Edita observação de um item do pedido
     getObservacaoItemPedido,        // Busca observação de um item do pedido
     putObservacaoPedido,            // Edita observação/feedback do pedido
-    getObservacaoPedido             // Busca observação/feedback do pedido
+    getObservacaoPedido,
+    getUltimoPedidoRestaurante             // Busca observação/feedback do pedido
 } from '../controllers/pedidoController.js';
 
 import { autenticarJWT } from '../middlewares/auth.js' // Middleware de autenticação JWT
@@ -45,6 +46,9 @@ router.get('/pedidos/restaurante/:restauranteId', autenticarJWT, getPedidosPorRe
 // Rota para editar um item do pedido
 router.put('/pedido/item/:itemId', autenticarJWT, putItemPedido)
 
+
+router.get('/pedido/ultimo', autenticarJWT, getUltimoPedidoRestaurante);
+
 // Rota para remover/cancelar um pedido
 router.delete('/pedido/:pedidoId', autenticarJWT, deletePedido)
 
@@ -68,5 +72,6 @@ router.put('/pedido/:pedidoId/observacao', autenticarJWT, putObservacaoPedido)
 
 // Rota para buscar observação/feedback do pedido
 router.get('/pedido/:pedidoId/observacao', autenticarJWT, getObservacaoPedido)
+
 
 export default router;

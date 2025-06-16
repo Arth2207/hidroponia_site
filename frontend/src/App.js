@@ -9,7 +9,9 @@ import RestaurantesAdmin from './components/restauranteAdmin.jsx';
 import DashboardUsuarios from './components/DashboardUsuarios.jsx';
 import RelatorioFinanceiro from './components/DashboardRelatorio.jsx';  
 import OrderSeparator from './components/DashboardSeparador.jsx';
-
+import OrderProducts from './components/PedidoCliente.jsx';
+import ConfirmOrder from './components/visualizaPedidoCliente.jsx';
+import AllOrders from './components/pedidoAdmin.jsx';
 function App() {
   return (
     <Router>
@@ -24,6 +26,9 @@ function App() {
         <Route path="/usuariosAdmin" element={<DashboardUsuarios />} />
         <Route path="/relatorioAdmin" element={<RelatorioFinanceiro />} />
         <Route path="/separador" element={<OrderSeparator />} />
+        <Route path="/pedidoCliente" element={<OrderProducts />} />
+        <Route path="/visualizaPedidoCliente" element={<ConfirmOrder />} />
+        <Route path="/pedidoAdmin" element={<AllOrders />} />
 
         {/* Adicione outras rotas conforme necessário */}
       </Routes>

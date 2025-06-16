@@ -1,52 +1,45 @@
 import pool from '../conections/database.js'
 
-export async function criarPedido({ usuarioId, itens }) {
-	let pedidoResult;
-    if (separadorId) {
-        // Se separadorId foi informado, inclui na query
-        pedidoResult = await pool.query(
-            'INSERT INTO pedidos (usuario_id, criado_em, separador_id) VALUES ($1, NOW(), $2) RETURNING id',
-            [usuarioId, separadorId]
-        )
-    } else {
-        // Se não, cria sem o separador
-        pedidoResult = await pool.query(
-            'INSERT INTO pedidos (usuario_id, criado_em) VALUES ($1, NOW()) RETURNING id',
-            [usuarioId]
-        )
-    }
-    const pedidoId = pedidoResult.rows[0].id
+export async function criarPedido({ restauranteId, itens, data_entrega = null, status = 'pendente' }) {
+    // Cria o pedido vinculado ao restaurante
+    const pedidoResult = await pool.query(
+        'INSERT INTO pedidos (restaurante_id, criado_em, data_entrega, status) VALUES ($1, NOW(), $2, $3) RETURNING id',
+        [restauranteId, data_entrega, status]
+    );
+    const pedidoId = pedidoResult.rows[0].id;
 
+    // Insere os itens do pedido
     for (const item of itens) {
         await pool.query(
-            'INSERT INTO itens_pedido (pedido_id, produto_id, quantidade) VALUES ($1, $2, $3)',
-            [pedidoId, item.produtoId, item.quantidade]
-        )
+            'INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, observacoes) VALUES ($1, $2, $3, $4)',
+            [pedidoId, item.produtoId, item.quantidade, item.observacoes || null]
+        );
     }
 
-
+    // Calcula o total do pedido
     const totalResult = await pool.query(
-       `SELECT SUM(p.preco * pi.quantidade) AS total 
-        FROM itens_pedido pi 
-        JOIN produtos p ON pi.produto_id = p.id 
-        WHERE pi.pedido_id = $1`,
+        `SELECT SUM(p.preco * ip.quantidade) AS total 
+         FROM itens_pedido ip
+         JOIN produtos p ON ip.produto_id = p.id 
+         WHERE ip.pedido_id = $1`,
         [pedidoId]
-    )
-    const total = totalResult.rows[0].total
+    );
+    const total = totalResult.rows[0].total;
 
-    return {pedidoId, total}
+    return { pedidoId, total };
 }
 
 export async function listarPedidos(page, limit){
     const offset = (page - 1) * limit
     const result = await pool.query(
-       `SELECT p.id as pedido_id, p.criado_em, u.nome AS cliente, 
-             SUM(pi.quantidade * pr.preco) AS total
+       `SELECT p.id as pedido_id, p.criado_em, r.nome AS restaurante, 
+             SUM(ip.quantidade * pr.preco) AS total,
+             p.status
         FROM pedidos p
-        JOIN usuarios u ON p.usuario_id = u.id
-        JOIN itens_pedido pi ON p.pedido_id = pi.id
-        JOIN produtos pr ON pr.id = pi.pedido_id
-        GROUP BY p.id, u.nome, p.criado_em
+        JOIN restaurantes r ON p.restaurante_id = r.id
+        JOIN itens_pedido ip ON ip.pedido_id = p.id
+        JOIN produtos pr ON pr.id = ip.produto_id
+        GROUP BY p.id, r.nome, p.criado_em, p.status
         ORDER BY p.criado_em DESC
         LIMIT $1 OFFSET $2`,
         [limit, offset]
@@ -59,11 +52,11 @@ export async function listarPedidos(page, limit){
 export async function listarPedidosPorRestaurante(restauranteId) {
     const result = await pool.query(
         `SELECT p.id AS pedido_id, p.criado_em, u.nome AS cliente, 
-                SUM(pi.quantidade * pr.preco) AS total
+                SUM(ip.quantidade * pr.preco) AS total
          FROM pedidos p
          JOIN usuarios u ON p.restaurante_id = u.restaurante_id
          JOIN itens_pedido ip ON ip.pedido_id = p.id
-         JOIN produtos pr ON pr.id = pi.produto_id
+         JOIN produtos pr ON pr.id = ip.produto_id
          WHERE u.restaurante_id = $1
          GROUP BY p.id, u.nome, p.criado_em
          ORDER BY p.criado_em DESC`,
@@ -207,12 +200,15 @@ export async function buscarObservacaoPedido(pedidoId) {
     return result.rows[0]?.observacao || ''
 }
 
-export async function listarPedidosParaSeparadorDB(separadorId) {
+export async function listarPedidosParaSeparadorDB() {
     const result = await pool.query(
-        `SELECT * FROM pedidos WHERE separador_id = $1`, // Remova o filtro status se quiser mostrar todos
-        [separadorId]
-    )
-    return result.rows
+        `SELECT p.id as pedido_id, r.nome as restaurante, p.status, p.criado_em
+         FROM pedidos p
+         JOIN restaurantes r ON p.restaurante_id = r.id
+         WHERE p.status = 'pendente'
+         ORDER BY p.criado_em ASC`
+    );
+    return result.rows;
 }
 
 export async function marcarPedidoSeparadoDB(pedidoId) {
