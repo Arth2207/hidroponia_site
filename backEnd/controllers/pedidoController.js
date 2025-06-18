@@ -13,19 +13,26 @@ const TOTAL_SHEET_HEADER = ['COD.', 'TOTAL', 'HORTA', 'DIFERENÇA']
 
 
 export async function postPedido(req, res) {
-    const { itens, data_entrega } = req.body;
-    const restauranteId = req.usuario.restauranteId; // do JWT
+  const usuario = req.user;
+  const { itens } = req.body;
 
-    if (!restauranteId || !Array.isArray(itens) || itens.length === 0) {
-        return res.status(400).json({ error: 'Dados do pedido inválidos.' });
-    }
-    try {
-        const { pedidoId, total } = await criarPedido({ restauranteId, itens, data_entrega });
-        res.status(201).json({ pedidoId, total });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Erro ao criar pedido.' });
-    }
+  if (!usuario || !usuario.restauranteId) {
+    console.error("Usuário não autenticado ou sem restauranteId");
+    return res.status(403).json({ error: 'Usuário não associado a um restaurante.' });
+  }
+  if (!itens || !Array.isArray(itens) || itens.length === 0) {
+    console.error("Itens do pedido inválidos:", itens);
+    return res.status(400).json({ error: 'Itens do pedido inválidos.' });
+  }
+
+  try {
+    const { pedidoId, total } = await criarPedido(usuario.restauranteId, itens);
+    res.status(201).json({ pedidoId, total });
+  } catch (error) {
+    // LOGA O ERRO DETALHADO NO TERMINAL
+    console.error("ERRO AO CRIAR PEDIDO:", error, error.stack);
+    res.status(500).json({ error: error.message || 'Erro ao criar pedido.' });
+  }
 }
 
 export async function getPedidos(req, res) {
@@ -354,7 +361,7 @@ export async function getObservacaoPedido(req, res) {
 
 export async function getUltimoPedidoRestaurante(req, res) {
     try {
-        const restauranteId = req.usuario.restauranteId;
+        const restauranteId = req.user.restauranteId;
         if (!restauranteId) return res.status(400).json({ error: "Restaurante não encontrado para o usuário." });
 
         // Busca os pedidos do restaurante, ordenados por data decrescente

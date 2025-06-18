@@ -1,7 +1,7 @@
 import { listarProdutosPaginado,buscarProdutoPorId,cadastrarProduto,
 editarProduto,excluirProduto, listarHistoricoPrecoProduto,
  buscarPrecoRestaurante, salvarOuAtualizarPreco, rankingMaisVendidos,
- buscarProdutosPorRestauranteId} from "../models/produtoModel.js";
+ buscarProdutosPorRestauranteId, listarProdutosParaCliente, listarProdutosComPrecoPersonalizadoModel} from "../models/produtoModel.js";
 import { registrarAuditoriaProduto,  } from "../models/auditoriaModel.js";
 import pool from '../conections/database.js' 
 import { redisClient } from '../middlewares/cacheRedis.js'
@@ -122,16 +122,13 @@ export async function restaurarProdutoController(req, res) {
 }
 
 export async function listarProdutosComPrecoPersonalizado(req, res) {
-    const restauranteId = req.params.restauranteId // ou de req.params
-    const produtos = await buscarProdutosPorRestauranteId() // sua função já existente
-
-    // Para cada produto, busca o preço personalizado
-    const produtosComPreco = await Promise.all(produtos.map(async (produto) => {
-        const preco = await buscarPrecoRestaurante(restauranteId, produto.id)
-        return { ...produto, preco: preco ?? produto.preco }
-    }))
-
-    res.json(produtosComPreco)
+    const restauranteId = req.params.restauranteId;
+    try {
+        const produtos = await listarProdutosComPrecoPersonalizadoModel(restauranteId);
+        res.json(produtos);
+    } catch (error) {
+        res.status(500).json({ error: 'Erro ao buscar produtos personalizados.' });
+    }
 }
 
 export async function alterarPrecoProdutoController(req, res) {
@@ -178,4 +175,23 @@ export async function getRankingMaisVendidos(req, res) {
     } catch (error) {
         res.status(500).json({ error: 'Erro ao buscar ranking de hortaliças.' })
     }
+}
+
+export async function getProdutosParaCliente(req, res) {
+  // O middleware de autenticação (autenticarJWT) já colocou os dados do usuário no `req.user`
+  const restauranteId = req.user.restauranteId;
+
+  if (!restauranteId) {
+    return res.status(403).json({ error: "Usuário não está associado a um restaurante." });
+  }
+
+  try {
+    // Chama a nova função eficiente do model
+    const produtos = await listarProdutosParaCliente(restauranteId);
+    res.json(produtos);
+
+  } catch (error) {
+    console.error("Erro ao buscar produtos para o cliente:", error);
+    res.status(500).json({ error: "Erro interno do servidor." });
+  }
 }

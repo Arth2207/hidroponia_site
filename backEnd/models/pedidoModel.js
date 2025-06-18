@@ -1,44 +1,61 @@
 import pool from '../conections/database.js'
 
-export async function criarPedido({ restauranteId, itens, data_entrega = null, status = 'pendente' }) {
-    // Cria o pedido vinculado ao restaurante
-    const pedidoResult = await pool.query(
-        'INSERT INTO pedidos (restaurante_id, criado_em, data_entrega, status) VALUES ($1, NOW(), $2, $3) RETURNING id',
-        [restauranteId, data_entrega, status]
+export async function criarPedido(restauranteId, itens) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Cria o pedido principal
+    const pedidoResult = await client.query(
+      `INSERT INTO pedidos (restaurante_id, criado_em, status)
+       VALUES ($1, NOW(), 'pendente')
+       RETURNING id`,
+      [restauranteId]
     );
     const pedidoId = pedidoResult.rows[0].id;
 
-    // Insere os itens do pedido
+    // Para cada item, busca o preço personalizado ou padrão e insere
     for (const item of itens) {
-        await pool.query(
-            'INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, observacoes) VALUES ($1, $2, $3, $4)',
-            [pedidoId, item.produtoId, item.quantidade, item.observacoes || null]
-        );
+      const precoResult = await client.query(
+        `SELECT COALESCE(pr.preco, p.preco) AS preco
+         FROM produtos p
+         LEFT JOIN precos_restaurante pr
+           ON p.id = pr.produto_id AND pr.restaurante_id = $1
+         WHERE p.id = $2`,
+        [restauranteId, item.produtoId]
+      );
+      const preco = precoResult.rows[0]?.preco;
+      if (preco == null) throw new Error("Produto não encontrado");
+
+      await client.query(
+        `INSERT INTO itens_pedido (pedido_id, produto_id, quantidade)
+         VALUES ($1, $2, $3)`,
+        [pedidoId, item.produtoId, item.quantidade]
+      );
     }
 
-    // Calcula o total do pedido
-    const totalResult = await pool.query(
-        `SELECT SUM(p.preco * ip.quantidade) AS total 
-         FROM itens_pedido ip
-         JOIN produtos p ON ip.produto_id = p.id 
-         WHERE ip.pedido_id = $1`,
-        [pedidoId]
-    );
-    const total = totalResult.rows[0].total;
-
-    return { pedidoId, total };
+    await client.query('COMMIT');
+    return { pedidoId };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
 }
 
 export async function listarPedidos(page, limit){
     const offset = (page - 1) * limit
     const result = await pool.query(
        `SELECT p.id as pedido_id, p.criado_em, r.nome AS restaurante, 
-             SUM(ip.quantidade * pr.preco) AS total,
+             SUM(ip.quantidade * COALESCE(pr_rest.preco, pr.preco)) AS total,
              p.status
         FROM pedidos p
         JOIN restaurantes r ON p.restaurante_id = r.id
         JOIN itens_pedido ip ON ip.pedido_id = p.id
         JOIN produtos pr ON pr.id = ip.produto_id
+        LEFT JOIN precos_restaurante pr_rest
+          ON pr.id = pr_rest.produto_id AND r.id = pr_rest.restaurante_id
         GROUP BY p.id, r.nome, p.criado_em, p.status
         ORDER BY p.criado_em DESC
         LIMIT $1 OFFSET $2`,
@@ -52,11 +69,13 @@ export async function listarPedidos(page, limit){
 export async function listarPedidosPorRestaurante(restauranteId) {
     const result = await pool.query(
         `SELECT p.id AS pedido_id, p.criado_em, u.nome AS cliente, 
-                SUM(ip.quantidade * pr.preco) AS total
+                SUM(ip.quantidade * COALESCE(pr_rest.preco, pr.preco)) AS total
          FROM pedidos p
          JOIN usuarios u ON p.restaurante_id = u.restaurante_id
          JOIN itens_pedido ip ON ip.pedido_id = p.id
          JOIN produtos pr ON pr.id = ip.produto_id
+         LEFT JOIN precos_restaurante pr_rest
+           ON pr.id = pr_rest.produto_id AND u.restaurante_id = pr_rest.restaurante_id
          WHERE u.restaurante_id = $1
          GROUP BY p.id, u.nome, p.criado_em
          ORDER BY p.criado_em DESC`,
@@ -79,16 +98,20 @@ export async function cancelarPedido(pedidoId) {
 export async function buscarPedidoDetalhado(pedidoId) {
     const result = await pool.query(
         `SELECT p.id as pedido_id, p.criado_em, p.status, u.nome as cliente, 
-                ip.produto_id, pr.nome as produto, ip.quantidade, pr.preco
+                ip.produto_id, pr.nome as produto, ip.quantidade,
+                COALESCE(pr_rest.preco, pr.preco) AS preco
          FROM pedidos p
          JOIN usuarios u ON p.restaurante_id = u.restaurante_id
          JOIN itens_pedido ip ON ip.pedido_id = p.id
          JOIN produtos pr ON pr.id = ip.produto_id
+         LEFT JOIN precos_restaurante pr_rest
+           ON pr.id = pr_rest.produto_id AND u.restaurante_id = pr_rest.restaurante_id
          WHERE p.id = $1`,
         [pedidoId]
     )
     return result.rows
 }
+
 
 export async function listarResumoPedidos(dataInicio, dataFim, page = 1, limit = 20, status, restauranteId) {
     const offset = (page - 1) * limit
@@ -228,11 +251,13 @@ export async function usuarioPodeEditarObservacaoItem(itemId, usuarioId) {
 export async function listarPedidosRecentesTodosRestaurantes(limit = 10) {
     const result = await pool.query(
         `SELECT p.id AS pedido_id, p.criado_em, r.nome AS restaurante, p.status, 
-                SUM(ip.quantidade * pr.preco) AS total
+                SUM(ip.quantidade * COALESCE(pr_rest.preco, pr.preco)) AS total
          FROM pedidos p
          JOIN restaurantes r ON p.restaurante_id = r.id
          JOIN itens_pedido ip ON ip.pedido_id = p.id
          JOIN produtos pr ON pr.id = ip.produto_id
+         LEFT JOIN precos_restaurante pr_rest
+           ON pr.id = pr_rest.produto_id AND r.id = pr_rest.restaurante_id
          GROUP BY p.id, r.nome, p.criado_em, p.status
          ORDER BY p.criado_em DESC
          LIMIT $1`,

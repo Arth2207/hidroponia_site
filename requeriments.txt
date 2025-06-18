@@ -1,0 +1,102 @@
+============================================================
+ GUIA DE INSTALAÇÃO E EXECUÇÃO DO PROJETO HIDROPONIA
+============================================================
+
+Este arquivo contém todas as instruções necessárias para configurar e executar o projeto em um ambiente de desenvolvimento local.
+
+---------------------------------
+1. SOFTWARE NECESSÁRIO
+---------------------------------
+
+Antes de começar, certifique-se de que os seguintes programas estão instalados em sua máquina:
+
+- Node.js (versão 18.x ou superior)
+- NPM (geralmente instalado com o Node.js)
+- PostgreSQL (versão 12 ou superior)
+
+---------------------------------
+2. CONFIGURAÇÃO DO BANCO DE DADOS
+---------------------------------
+
+O projeto utiliza um banco de dados PostgreSQL.
+
+PASSO 1: CRIE O BANCO DE DADOS
+   - Abra seu terminal de SQL (ex: psql) e execute o comando abaixo para criar o banco de dados:
+     
+     CREATE DATABASE hidro_tabela;
+
+PASSO 2: IMPORTE A ESTRUTURA DAS TABELAS
+   - Abra um terminal (CMD ou PowerShell) e execute o comando a seguir para criar todas as tabelas.
+   - Substitua 'postgres' pelo seu nome de usuário do PostgreSQL, se for diferente.
+   - Você precisará digitar a senha do seu usuário do banco de dados quando solicitado.
+
+     psql -U postgres -d hidro_tabela -f "c:\Users\arthu\OneDrive\Área de Trabalho\Laravel\hidroponia_site\backEnd\conections\hidroponia.sql"
+
+---------------------------------
+3. CONFIGURAÇÃO DO BACKEND
+---------------------------------
+
+PASSO 1: NAVEGUE ATÉ A PASTA DO BACKEND
+   - Abra um terminal e execute:
+
+     cd "c:\Users\arthu\OneDrive\Área de Trabalho\Laravel\hidroponia_site\backEnd"
+
+PASSO 2: CRIE O ARQUIVO DE AMBIENTE (.env)
+   - Na pasta 'backEnd', crie um arquivo chamado exatamente `.env`
+   - Copie e cole o conteúdo abaixo dentro dele.
+   - **IMPORTANTE**: Altere os valores para corresponder à sua configuração local.
+
+     # String de conexão do seu banco de dados PostgreSQL (altere usuario:senha se necessário)
+     DATABASE_URL=postgres://postgres:1234@localhost:5432/hidro_tabela
+     
+     # Chave secreta para gerar tokens JWT (use uma string longa e aleatória)
+     JWT_SECRET=minha-chave-secreta-muito-forte-123456
+     
+     # (Opcional) Credenciais para envio de e-mail (usado na recuperação de senha)
+     EMAIL_USER=seu_email_de_envio@exemplo.com
+     EMAIL_PASS=sua_senha_de_app_do_email
+
+PASSO 3: INSTALE AS DEPENDÊNCIAS
+   - No mesmo terminal, execute o comando:
+
+     npm install
+
+PASSO 4: INICIE O SERVIDOR
+   - Para iniciar o backend, execute:
+
+     npm start
+
+   - O servidor estará rodando na porta 3001. Mantenha este terminal aberto.
+
+---------------------------------
+4. CONFIGURAÇÃO DO FRONTEND
+---------------------------------
+
+PASSO 1: NAVEGUE ATÉ A PASTA DO FRONTEND
+   - **Abra um NOVO terminal** (mantenha o do backend rodando).
+   - Execute o comando:
+
+     cd "c:\Users\arthu\OneDrive\Área de Trabalho\Laravel\hidroponia_site\frontend"
+
+PASSO 2: INSTALE AS DEPENDÊNCIAS
+   - No terminal do frontend, execute:
+
+     npm install
+
+PASSO 3: INICIE A APLICAÇÃO
+   - Para iniciar o frontend, execute:
+
+     npm start
+
+   - O site será aberto automaticamente no seu navegador em http://localhost:3000.
+
+---------------------------------
+RESUMO PARA RODAR O PROJETO
+---------------------------------
+
+Para o projeto funcionar, você precisa de DOIS terminais abertos:
+1.  **Terminal 1 (Backend):** Rodando `npm start` dentro da pasta `backEnd`.
+2.  **Terminal 2 (Frontend):** Rodando `npm start` dentro da pasta `frontend`.
+
+O site estará acessível em: http://localhost:3000
+A API do backend estará em:

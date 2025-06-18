@@ -108,3 +108,43 @@ export async function buscarProdutosPorRestauranteId() {
   );
   return result.rows;
 }
+
+export async function listarProdutosParaCliente(restauranteId) {
+    const query = `
+      SELECT
+        p.id,
+        p.nome,
+        p.unidade,
+        COALESCE(pr.preco, p.preco) AS preco
+      FROM
+        produtos p
+      LEFT JOIN
+        precos_restaurante pr ON p.id = pr.produto_id AND pr.restaurante_id = $1
+      WHERE
+        p.ativo = true
+      ORDER BY
+        p.nome;
+    `;
+    const result = await pool.query(query, [restauranteId]);
+    return result.rows;
+}
+
+export async function listarProdutosComPrecoPersonalizadoModel(restauranteId) {
+    const query = `
+      SELECT
+        p.id,
+        p.nome,
+        p.unidade,
+        COALESCE(pr.preco, p.preco) AS preco
+      FROM
+        produtos p
+      LEFT JOIN
+        precos_restaurante pr ON p.id = pr.produto_id AND pr.restaurante_id = $1
+      WHERE
+        p.ativo = true
+      ORDER BY
+        p.nome;
+    `;
+    const result = await pool.query(query, [restauranteId]);
+    return result.rows;
+}

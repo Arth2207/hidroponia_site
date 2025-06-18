@@ -3,15 +3,25 @@ import { listarPedidosPorRestaurante, listarPedidosRecentesTodosRestaurantes } f
 
 export async function getDashboard(req, res) {
     try {
-        const usuario = req.usuario;
+        // CORREÇÃO: O middleware anexa os dados em `req.user`, não `req.usuario`.
+        const usuario = req.user;
+
+        // Adicionando uma verificação de segurança para garantir que o usuário existe
+        if (!usuario || !usuario.restauranteId) {
+            return res.status(403).json({ error: 'Dados do usuário inválidos ou não associados a um restaurante.' });
+        }
+
         // Busca avisos ativos
         const avisos = await listarAvisos();
         // Busca pedidos recentes do restaurante do usuário
         const pedidos = await listarPedidosPorRestaurante(usuario.restauranteId);
+        
         // Ordena por data decrescente
         pedidos.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
+        
         // Pega os 3 mais recentes
         const recentOrders = pedidos.slice(0, 3);
+        
         // Último pedido
         const lastOrder = pedidos[0] || null;
 
@@ -21,7 +31,7 @@ export async function getDashboard(req, res) {
             lastOrder
         });
     } catch (error) {
-        console.error(error);
+        console.error("ERRO NO getDashboard:", error);
         res.status(500).json({ error: 'Erro ao buscar dados do dashboard.' });
     }
 }
